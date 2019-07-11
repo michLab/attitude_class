@@ -6,75 +6,70 @@ Attitude::Attitude()
 
 }
 
-bool Attitude::set_C_a_b(float c11, float c12, float c13,
-                                     float c21, float c22, float c23,
-                                     float c31, float c32, float c33)
+
+bool Attitude::set_DCM(float c11, float c12, float c13,
+                       float c21, float c22, float c23,
+                       float c31, float c32, float c33)
 {
-    C_a_b <<    c11, c12, c13,
-                            c21, c22, c23,
-                            c31, c32, c33;
+    DCM <<  c11, c12, c13,
+            c21, c22, c23,
+            c31, c32, c33;
 
-    C_b_a = C_a_b.transpose();
-
-    update_euler_b_a();
     return true;
 }
 
-bool Attitude::set_C_b_a(float c11, float c12, float c13, float c21, float c22, float c23, float c31, float c32, float c33)
+bool Attitude::set_DCM(Eigen::Matrix3f DCM_in)
 {
-    C_b_a <<    c11, c12, c13,
-                            c21, c22, c23,
-                            c31, c32, c33;
-
-    C_a_b = C_b_a.transpose();
-
-    update_euler_b_a();
+    DCM = DCM_in;
     return true;
 }
 
-bool Attitude::set_psi_b_a(float psi_in)
+
+bool Attitude::set_psi(float psi_in)
 {
-    psi_b_a = psi_in;
+    psi = psi_in;
     update_C();
     return true;
 }
 
-bool Attitude::set_phi_b_a(float phi_in)
+bool Attitude::set_phi(float phi_in)
 {
-    phi_b_a = phi_in;
-    update_C();
+    phi = phi_in;
     return true;
 }
 
-bool Attitude::set_theta_b_a(float theta_in)
+bool Attitude::set_theta(float theta_in)
 {
-    theta_b_a = theta_in;
-    update_C();
+    theta = theta_in;
     return true;
 }
 
-bool Attitude::set_euler_b_a(float phi_in, float theta_in, float psi_in)
+bool Attitude::set_euler(float phi_in, float theta_in, float psi_in)
 {
-    phi_b_a = phi_in;
-    theta_b_a = theta_in;
-    psi_b_a = psi_in;
-    update_C();
+    phi = phi_in;
+    theta = theta_in;
+    psi = psi_in;
     return true;
 }
 
-float Attitude::get_psi_from_ref_to_euler()
+float Attitude::get_psi()
 {
-    return psi_b_a;
+    return psi;
 }
 
-float Attitude::get_phi_from_ref_to_euler()
+float Attitude::get_phi()
 {
-    return phi_b_a;
+    return phi;
 }
 
-float Attitude::get_theta_from_ref_to_euler()
+float Attitude::get_theta()
 {
-    return theta_b_a;
+    return theta;
+}
+
+Eigen::Matrix3f Attitude::get_DCM()
+{
+    return DCM;
 }
 
 std::string Attitude::get_version()
@@ -82,41 +77,39 @@ std::string Attitude::get_version()
     return ATTITUDE_VERSION;
 }
 
-bool Attitude::update_euler_b_a()
+bool Attitude::update_euler()
 {
-    phi_b_a = atan2f(C_a_b(2,1), C_a_b(2,2));
-    theta_b_a = -asinf(C_a_b(2,0));
-    psi_b_a = atan2f(C_a_b(1,0), C_a_b(0,0));
+    phi     = atan2f(DCM(2,1), DCM(2,2));
+    theta   = -asinf(DCM(2,0));
+    psi     = atan2f(DCM(1,0), DCM(0,0));
 
     return true;
 }
 
 bool Attitude::update_C()
 {
-    float cos_theta = cosf(theta_b_a);
-    float sin_theta = sinf(theta_b_a);
-    float cos_phi = cosf(phi_b_a);
-    float sin_phi = sinf(phi_b_a);
-    float cos_psi = cosf(psi_b_a);
-    float sin_psi = cosf(psi_b_a);
+    float cos_theta = cosf(theta);
+    float sin_theta = sinf(theta);
+    float cos_phi   = cosf(phi);
+    float sin_phi   = sinf(phi);
+    float cos_psi   = cosf(psi);
+    float sin_psi   = cosf(psi);
 
-    C_a_b(0,0) = cos_theta * cos_psi;
-    C_a_b(0,1) = -cos_phi * sin_psi +
-                              sin_phi * sin_theta * cos_psi;
-    C_a_b(0,2) = sin_phi * sin_psi +
-                             cos_phi * sin_theta * cos_psi;
+    DCM(0,0) = cos_theta * cos_psi;
+    DCM(0,1) = -cos_phi * sin_psi +
+               sin_phi * sin_theta * cos_psi;
+    DCM(0,2) = sin_phi * sin_psi +
+               cos_phi * sin_theta * cos_psi;
 
-    C_a_b(1,0) = cos_theta * sin_psi;
-    C_a_b(1,1) = cos_phi * cos_psi +
-                             sin_phi * sin_theta * sin_psi;
-    C_a_b(1,2) = -sin_phi * cos_psi +
-                             cos_phi * sin_theta * sin_psi;
+    DCM(1,0) = cos_theta * sin_psi;
+    DCM(1,1) = cos_phi * cos_psi +
+               sin_phi * sin_theta * sin_psi;
+    DCM(1,2) = -sin_phi * cos_psi +
+               cos_phi * sin_theta * sin_psi;
 
-    C_a_b(2,0) = -sin_theta;
-    C_a_b(2,1) = sin_phi * cos_theta;
-    C_a_b(2,2) = cos_phi * cos_theta;
-
-    C_b_a = C_a_b.transpose();
+    DCM(2,0) = -sin_theta;
+    DCM(2,1) = sin_phi * cos_theta;
+    DCM(2,2) = cos_phi * cos_theta;
 
     return true;
 }
