@@ -77,6 +77,11 @@ float Attitude::get_theta_from_ref_to_euler()
     return theta_b_a;
 }
 
+std::string Attitude::get_version()
+{
+    return ATTITUDE_VERSION;
+}
+
 bool Attitude::update_euler_b_a()
 {
     phi_b_a = atan2f(C_a_b(2,1), C_a_b(2,2));

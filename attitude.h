@@ -3,6 +3,8 @@
 
 #include "Eigen/Core"
 
+#define ATTITUDE_VERSION    "Attitude v.0.1.0.0"
+
 
 class Attitude
 {
@@ -22,6 +24,7 @@ public:
     float get_psi_from_ref_to_euler();
     float get_phi_from_ref_to_euler();
     float get_theta_from_ref_to_euler();
+    std::string get_version();
 
 protected:
     Eigen::Matrix3f C_a_b;
